@@ -14,6 +14,13 @@ require('./polyfills.js');
  */
 
 /**
+ * @typedef {object} ChecklistConfig
+ * @description Tool's config from Editor
+ * @property {boolean} preserveBlank - Whether or not to keep blank paragraphs when saving editor data
+ * @property {boolean} isReadonly - flag that shows if editor is in readonly mode
+ */
+
+/**
  * Checklist Tool for the Editor.js 2.0
  */
 class Checklist {
@@ -64,6 +71,14 @@ class Checklist {
       items: []
     };
 
+    /**
+     * Tool's settings passed from Editor
+     *
+     * @type {ChecklistConfig}
+     * @private
+     */
+    this._settings = config;
+
     this.api = api;
     this.data = data;
   }
@@ -105,9 +120,11 @@ class Checklist {
       }
     }, false);
 
-    this._elements.wrapper.addEventListener('click', (event) => {
-      this.toggleCheckbox(event);
-    });
+    if (!this._settings.isReadonly) {
+      this._elements.wrapper.addEventListener('click', (event) => {
+        this.toggleCheckbox(event);
+      });
+    }
 
     return this._elements.wrapper;
   }
@@ -120,7 +137,7 @@ class Checklist {
    * @public
    */
   validate(savedData) {
-    return !!savedData.items.length;
+    return !!savedData.items.length || this._settings.preserveBlank;
   }
 
   /**
